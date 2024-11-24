@@ -1,7 +1,7 @@
 ```javascript
 const https = require('https');
 
-https.get('https://milky-7rzavq8c4-justamilkmangods-projects.vercel.app', (resp) => {
+https.get('https://milky-ai-g7to.vercel.app', (resp) => {
   let data = '';
 
   // A chunk of data has been received.
