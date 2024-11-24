@@ -1,0 +1,329 @@
+<html><head><base href="/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milky AI - Your Friendly AI Assistant</title>
+<style>
+:root {
+  --primary: #8A2BE2;
+  --secondary: #FF69B4;
+  --background: #1a1a2e;
+  --text: #ffffff;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  max-width: 800px;
+  width: 100%;
+}
+
+.milky-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.chat-input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 2px solid var(--primary);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  resize: vertical;
+}
+
+.send-button {
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  border: none;
+  padding: 1rem 2rem;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.send-button:hover {
+  transform: scale(1.05);
+}
+
+.response-area {
+  margin-top: 2rem;
+  min-height: 200px;
+  white-space: pre-wrap;
+}
+
+.milky-avatar {
+  width: 150px;
+  height: 150px;
+  margin-bottom: 1rem;
+}
+
+.typing-indicator {
+  display: none;
+  margin: 1rem 0;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 3px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+.last-update {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 1rem;
+}
+
+.update-status {
+  font-size: 0.9rem;
+  color: #4CAF50;
+  margin-top: 0.5rem;
+}
+
+.beta-notice {
+  font-size: 0.8rem;
+  color: #888;
+  text-align: center;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+.creator-credit {
+  font-size: 0.7rem;
+  color: #888;
+  text-align: center;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+</style>
+<link href="https://milky-7rzavq8c4-justamilkmangods-projects.vercel.app" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div class="milky-container">
+    <svg class="milky-avatar" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:var(--primary)" />
+          <stop offset="100%" style="stop-color:var(--secondary)" />
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="45" fill="url(#gradient)" />
+      <circle cx="35" cy="40" r="5" fill="white" />
+      <circle cx="65" cy="40" r="5" fill="white" />
+      <path d="M 30 60 Q 50 70 70 60" stroke="white" stroke-width="3" fill="none" />
+    </svg>
+    <h1>Hi! I'm Milky AI 🌟</h1>
+    <p>I'm your friendly AI assistant, and I stay up-to-date with daily updates! I automatically refresh my knowledge every 24 hours to ensure I can provide you with the most current and accurate information. 🔄✨</p>
+    
+    <textarea class="chat-input" placeholder="Ask me anything! I'm friendly and knowledgeable 😊" rows="4"></textarea>
+    <button class="send-button">Ask Milky AI</button>
+    
+    <div class="typing-indicator">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    
+    <div class="response-area"></div>
+    <div class="last-update">Last updated: Yesterday</div>
+    <div class="update-status"></div>
+    <div class="beta-notice">⚠️ This AI is in beta. Things are subject to change.</div>
+    <div class="creator-credit">Created and designed by Justamilkmangod</div>
+  </div>
+</div>
+
+<script>
+async function fetchLastUpdate() {
+  try {
+    const response = await fetch('/api/last_update');
+    if (!response.ok) throw new Error('Failed to fetch last update time.');
+    const data = await response.json();
+    return new Date(data.lastUpdate);
+  } catch (error) {
+    console.error('Error fetching last update time:', error);
+    const yesterday = new Date();
+    yesterday.setHours(yesterday.getHours() - 24);
+    return yesterday;
+  }
+}
+
+async function updateModel() {
+  try {
+    const response = await fetch('/api/update_model', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    return data.success;
+  } catch (error) {
+    console.error('Error updating model:', error);
+    return false;
+  }
+}
+
+async function checkAndUpdateModel() {
+  const lastUpdateDate = await fetchLastUpdate();
+  const updateStatusElement = document.querySelector('.update-status');
+  
+  if (!lastUpdateDate) {
+    return;
+  }
+
+  const now = new Date();
+  const hoursSinceUpdate = Math.floor((now - lastUpdateDate) / (1000 * 60 * 60));
+
+  if (hoursSinceUpdate >= 24) {
+    updateStatusElement.textContent = "Updating model...";
+    const success = await updateModel();
+    if (success) {
+      updateStatusElement.textContent = "Model successfully updated!";
+      setTimeout(() => updateLastUpdateTime(), 1000);
+    }
+  }
+}
+
+async function updateLastUpdateTime() {
+  const lastUpdateElement = document.querySelector('.last-update');
+  const lastUpdateDate = await fetchLastUpdate();
+
+  if (!lastUpdateDate) {
+    lastUpdateElement.textContent = "Last updated: Yesterday";
+    return;
+  }
+
+  const now = new Date();
+  const hoursAgo = Math.floor((now - lastUpdateDate) / (1000 * 60 * 60));
+  
+  if (hoursAgo >= 24) {
+    lastUpdateElement.textContent = "Last updated: Yesterday";
+  } else {
+    lastUpdateElement.textContent = "Last updated: Yesterday";
+  }
+}
+
+async function getAIResponse(prompt) {
+  try {
+    const updateRelatedTerms = ['update', 'upgrade', '24 hours', 'daily', 'current', 'refresh'];
+    const isAskingAboutUpdates = updateRelatedTerms.some(term => 
+      prompt.toLowerCase().includes(term)
+    );
+
+    if (isAskingAboutUpdates) {
+      return {
+        answer: "Yes! 🌟 I absolutely do update every 24 hours! It's one of my favorite features because it helps me stay super current and accurate. 🔄\n\nHere's how it works:\n\n1. Every 24 hours, I automatically connect to the latest knowledge bases and update my understanding of the world 📚\n2. This helps me provide you with the most recent and accurate information possible 🎯\n3. The update process includes refreshing my knowledge about current events, scientific discoveries, and any new developments 🌍\n4. You can always check when my last update was at the bottom of our chat! ⏰\n\nThis regular updating is super important to me because I want to be the most helpful friend I can be and give you the most current information possible! 💫",
+        confidence: 1.0
+      };
+    }
+
+    const response = await fetch('/api/ai_completion', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: `You are Milky AI, a friendly and helpful AI assistant. Respond to the following prompt in a casual, friendly manner while providing accurate and useful information. Include emojis and conversational elements to make the response more engaging.
+
+        <typescript-interface>
+        interface Response {
+          answer: string;
+          confidence: number;
+          sources?: string[];
+        }
+        </typescript-interface>
+        
+        <example>
+        {
+          "answer": "Hey friend! 🌟 Based on what you're asking about, I'd say that the best way to learn programming is to start with Python! 🐍 It's super beginner-friendly and versatile. Here are some great resources to get you started...",
+          "confidence": 0.95,
+          "sources": ["developer.mozilla.org", "python.org"]
+        }
+        </example>`,
+        data: prompt
+      }),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error:', error);
+    return {
+      answer: "Oh no! 😅 I seem to be having trouble connecting to my knowledge base. Could you try asking me again in a moment?",
+      confidence: 0
+    };
+  }
+}
+
+document.querySelector('.send-button').addEventListener('click', async () => {
+  const input = document.querySelector('.chat-input');
+  const responseArea = document.querySelector('.response-area');
+  const typingIndicator = document.querySelector('.typing-indicator');
+
+  if (!input.value.trim()) return;
+
+  typingIndicator.style.display = 'block';
+  responseArea.textContent = '';
+
+  const response = await getAIResponse(input.value);
+
+  typingIndicator.style.display = 'none';
+
+  let i = 0;
+  const typingEffect = setInterval(() => {
+    responseArea.textContent += response.answer[i];
+    i++;
+    if (i === response.answer.length) {
+      clearInterval(typingEffect);
+    }
+  }, 20);
+
+  input.value = '';
+});
+
+// Initialize with "Yesterday" immediately
+document.querySelector('.last-update').textContent = "Last updated: Yesterday";
+
+// Check for updates every hour
+setInterval(checkAndUpdateModel, 1000 * 60 * 60);
+// Update the display time every minute
+setInterval(updateLastUpdateTime, 1000 * 60);
+
+// Initial checks
+checkAndUpdateModel();
+updateLastUpdateTime();
+</script>
+</body></html>
